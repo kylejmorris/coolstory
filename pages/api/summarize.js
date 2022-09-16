@@ -12,7 +12,7 @@ export default async (req, res) => {
 
     const response = await openai.createCompletion({
       model: "text-davinci-002",
-      prompt: "Summarize this in one sentence\n\n" + req.body.prompt + "\n",
+      prompt: "Shorten this paragraph into 1 simple sentence\n\n" + req.body.prompt + "\n",
       temperature: 0.7,
       max_tokens: 256,
       top_p: 1,
