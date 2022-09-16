@@ -28,6 +28,8 @@ export default function Home() {
 
 
   const generateImage = async () => {
+    const apiKey = process.env.BANANA_API_KEY
+    const modelKey = process.env.BANANA_MODEL_KEY
     console.log("INITIAL PROMPT:" + prompt)
     summarize(prompt).then(async (summary) => {
       console.log("SUMMARY GENERATED: " + summary)
