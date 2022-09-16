@@ -1,20 +1,21 @@
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
 import { useState, useEffect } from 'react';
+const banana = require('@banana-dev/banana-dev');
 
 export default function Home() {
-  const [data, setData] = useState( { text:'' });
-  const [query, setQuery] = useState();
-  const [search, setSearch] = useState();
-  const [isLoading, setIsLoading] = useState(false);
+  const [prompt, setPrompt] = useState("");
+  const [images, setImages] = useState([]);
+  console.log(prompt)
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (search) {
-      setIsLoading(true);
+    // update image list on page
+  },[]);
+
+  const summarize = async (prompt) => {
       const res = await fetch(`/api/summarize`, {
         body: JSON.stringify({
-          prompt: search
+          prompt: prompt
         }),
         headers: {
           'Content-Type': 'application/json'
@@ -22,55 +23,33 @@ export default function Home() {
         method: 'POST'
       })
       const data = await res.json();
-      setData(data);
-      setIsLoading(false);
-    }};
+      return data.text
+  }
 
-    fetchData();
-  }, [search]);
+
+  const generateImage = async () => {
+    console.log("INITIAL PROMPT:" + prompt)
+    summarize(prompt).then(async (summary) => {
+      console.log("SUMMARY GENERATED: " + summary)
+      const promptModded = "A clear, high quality photo showing that " + summary + "highly detailed, cinematic lighting, digital art"
+      console.log("MODDED PROMPT: " + promptModded)
+      const out = await banana.run("48e6f984-4f85-4b8a-a2aa-6ade981c129e", "cee3a79a-7983-4f39-9974-9fce016fc809", {"prompt": prompt})
+      setImages([...images, {"text": promptModded, "image": out.modelOutputs[0].image_base64}]);
+    })
+  }
+
   return (
     <div className={styles.container}>
+                <input type="text" name="prompt" onChange={(e) => {setPrompt(e.target.value)}} />
+          <button onClick={() => {generateImage(prompt)}}>
+            Generate story page
+          </button>
+        {images.map((img) => { return (<p>{img['text']}<img src={"data:image/png;base64," + img['image']} /></p>)
+        })}
       <Head>
-        <title>GPT-3 App</title>
+        <title>Story Generator</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          <a>AI Lyrics Generator</a>
-        </h1>
-
-        <p className={styles.description}>Built with NextJS & GPT-3 API</p>
-
-        <div className={styles.grid}>
-          <div className={styles.card}>
-            <h3>Enter Artist:</h3>
-            <input
-          type="text"
-          value={query}
-          onChange={event => setQuery(event.target.value)}
-        />
-        <button
-          type="button"
-          onClick={() =>
-            setSearch(query)
-          }
-        >
-          Generate
-        </button>
-
-          <h4>Lyrics</h4>  
-          {isLoading ? (
-            <div>Loading ...</div>
-         ) : (
-           <span>
-           {data.text}
-           </span>
-           )}
-
-          </div>
-        </div>
-      </main>
     </div>
   );
 }
